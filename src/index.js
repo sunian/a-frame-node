@@ -4,6 +4,7 @@ import "aframe-controller-cursor-component";
 import "aframe-environment-component";
 import "./components/disable-culling";
 import "./components/move-arm";
+import "./components/controller-binds";
 
 const App = () => (
   <a-scene background="color: black" renderer="antialias: true">
@@ -50,8 +51,16 @@ const App = () => (
       {/* camera */}
       <a-entity id="head" camera wasd-controls look-controls></a-entity>
       {/* hand controls */}
-      <a-entity id="left-hand" hand-controls="hand: left"></a-entity>
-      <a-entity id="right-hand" hand-controls="hand: right"></a-entity>
+      <a-entity
+        id="left-hand"
+        hand-controls="hand: left"
+        controller-binds
+      ></a-entity>
+      <a-entity
+        id="right-hand"
+        hand-controls="hand: right"
+        controller-binds
+      ></a-entity>
     </a-entity>
   </a-scene>
 );
