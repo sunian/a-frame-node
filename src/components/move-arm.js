@@ -11,7 +11,10 @@ AFRAME.registerComponent("move-arm", {
 
   init: function () {
     const scene = this.el.sceneEl.object3D;
+    this.leftController = document.querySelector("#left-hand").object3D;
+
     this.target = new THREE.Object3D();
+    this.leftController.position.z = -0.5;
     scene.add(this.target);
     this.iks = [];
 
@@ -22,14 +25,36 @@ AFRAME.registerComponent("move-arm", {
       const findBone = function (name) {
         return bones.find((b) => b.name.includes(name));
       };
-      this.armBone = findBone(this.data.arm + "Arm");
-      console.log(this.armBone);
-      // console.log(isNaN(this.data.angle));
+      this.armBone = findBone(this.data.arm + "ForeArm");
+      this.ikBones = [];
+      const ik = new THREE.IK();
+      const chain = new THREE.IKChain();
+      const constraints = [new THREE.IKBallConstraint()];
+
+      // first
+      chain.add(
+        new THREE.IKJoint(findBone(this.data.arm + "Shoulder"), { constraints })
+      );
+      chain.add(
+        new THREE.IKJoint(findBone(this.data.arm + "Arm"), { constraints })
+      );
+      chain.add(
+        new THREE.IKJoint(findBone(this.data.arm + "ForeArm"), { constraints })
+      );
+
+      // last
+      chain.add(
+        new THREE.IKJoint(findBone(this.data.arm + "Hand"), { constraints }),
+        { target: this.target }
+      );
+      ik.add(chain);
+      // scene.add(ik.getRootBone());
+      this.iks.push(ik);
     });
   },
 
   tick: function (time, timeDelta) {
-    this.armBone.rotation.y = (Math.random() - 0.5) * Math.PI;
+    this.target.position.copy(this.leftController.position);
     for (let ik of this.iks) {
       ik.solve();
     }
