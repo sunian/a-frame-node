@@ -17,6 +17,10 @@ module.exports = {
         loader: "babel-loader",
       },
       {
+        test: /\.css$/,
+        use: ["style-loader", "css-loader"],
+      },
+      {
         test: /\.glsl$/,
         loader: "webpack-glsl-loader",
       },
@@ -36,6 +40,6 @@ module.exports = {
     port: 8080,
     host: "localhost",
     hot: true,
-    allowedHosts: "all"
+    allowedHosts: "all",
   },
 };

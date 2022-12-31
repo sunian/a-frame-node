@@ -1,0 +1,30 @@
+@font-face {
+  font-family: RubikVinyl;
+  src: url(RubikVinyl-Regular.ttf);
+}
+
+body {
+  font-family: "RubikVinyl";
+  color: white;
+  background-color: #0f0923;
+}
+
+.fullScreenCenter {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+.bigText {
+  font-size: 420%;
+}
+
+#game-container {
+  height: 100%;
+  width: 100%;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+}

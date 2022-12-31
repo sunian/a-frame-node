@@ -1,5 +1,6 @@
 import AFRAME from "aframe";
 import Dom from "./Dom";
+import "./style.css";
 import "aframe-controller-cursor-component";
 import "aframe-environment-component";
 import "./components/disable-culling";
@@ -72,4 +73,4 @@ const App = () => (
 );
 
 // Mount main app
-document.querySelector("body").appendChild(App());
+document.querySelector("#game-container").replaceChildren(App());
