@@ -41,9 +41,7 @@ AFRAME.registerComponent("move-arm", {
         new THREE.SphereGeometry(0.1),
         new THREE.MeshBasicMaterial({ color: 0xff0000 })
       );
-      this.pivot = new THREE.Object3D();
-      this.pivot.add(movingTarget);
-      scene.add(this.pivot);
+      this.target.add(movingTarget);
 
       // Create a chain of THREE.Bone's, each wrapped as an IKJoint
       // and added to the IKChain
@@ -82,7 +80,7 @@ AFRAME.registerComponent("move-arm", {
   },
 
   tick: function (time, timeDelta) {
-    this.pivot.position.copy(this.leftController.position);
+    this.target.position.copy(this.leftController.position);
     for (let ik of this.iks) {
       ik.solve();
     }
