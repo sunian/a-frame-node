@@ -49,7 +49,13 @@ const App = () => (
 
     <a-entity id="cameraRig">
       {/* camera */}
-      <a-entity id="head" camera wasd-controls look-controls></a-entity>
+      <a-entity
+        id="head"
+        camera
+        wasd-controls
+        look-controls
+        position="0 1 0"
+      ></a-entity>
       {/* hand controls */}
       <a-entity
         id="left-hand"

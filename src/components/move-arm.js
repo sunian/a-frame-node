@@ -1,5 +1,6 @@
 import AFRAME from "aframe";
-import { IK, IKChain, IKJoint, IKBallConstraint, IKHelper } from "three-ik";
+import "three-ik";
+import IKHelper from "./IKHelper";
 
 const THREE = AFRAME.THREE;
 
