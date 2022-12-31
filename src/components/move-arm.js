@@ -22,18 +22,33 @@ AFRAME.registerComponent("move-arm", {
     this.el.addEventListener("model-loaded", () => {
       const mesh = this.el.getObject3D("mesh");
       const skeleton = mesh.getObjectByName("Beta_Surface").skeleton;
-      const bones = skeleton.bones;
       const findBone = function (name) {
-        return bones.find((b) => b.name.includes(name));
+        return skeleton.bones.find((b) => b.name.includes(name));
       };
-      this.armBone = findBone(this.data.arm + "Shoulder");
-      console.log(this.armBone);
+      const lastMobileBone = findBone(this.data.arm + "Hand");
+      const firstMobileBone = findBone(this.data.arm + "Shoulder");
+      const modelBones = [lastMobileBone];
+      var currentBone = lastMobileBone;
+      const rootBone = new THREE.Bone();
+      rootBone.name = firstMobileBone.name;
+
+      while (currentBone instanceof THREE.Bone) {
+        currentBone = currentBone.parent;
+        modelBones.push(currentBone);
+      }
+      modelBones.reverse();
+
+      console.log("*****");
+      for (let bone of modelBones) {
+        console.log(bone.name, bone.position, bone.scale);
+      }
+      console.log("*****");
+
       const ik = new THREE.IK();
 
       const chain = new THREE.IKChain();
       const flexConstraint = [new THREE.IKBallConstraint(120)];
       const fixedConstraint = [new THREE.IKBallConstraint(0)];
-      this.tempBones = [];
 
       // Create a target that the IK's effector will reach
       // for.
@@ -45,25 +60,33 @@ AFRAME.registerComponent("move-arm", {
 
       // Create a chain of THREE.Bone's, each wrapped as an IKJoint
       // and added to the IKChain
-      for (let i = 0; i <= 3; i++) {
+      var constraints = fixedConstraint;
+      const ikBones = [];
+      var scale = new THREE.Vector3(1, 1, 1);
+      for (let i = 0; i < modelBones.length; i++) {
         const bone = new THREE.Bone();
-        if (i === 0) {
-          // bone.position.copy(this.armBone.position);
-          bone.position.y = 0;
-        } else {
-          bone.position.y = 0.5;
-        }
+        const modelBone = modelBones[i];
+        bone.name = modelBone.name;
+        scale.multiply(modelBone.scale);
+        bone.position.multiply(scale);
+        bone.position.copy(scale.clone().multiply(modelBone.position));
+        bone.rotation.copy(modelBone.rotation);
+        bone.up.copy(modelBone.up);
+        // bone.scale.copy(modelBone.scale);
 
-        if (this.tempBones[i - 1]) {
-          this.tempBones[i - 1].add(bone);
+        if (ikBones[i - 1]) {
+          ikBones[i - 1].add(bone);
         }
-        this.tempBones.push(bone);
+        ikBones.push(bone);
 
         // The last IKJoint must be added with a `target` as an end effector.
-        const target = i === 3 ? movingTarget : null;
-        const constraints = i === 0 ? fixedConstraint : flexConstraint;
+        const target = modelBone === lastMobileBone ? movingTarget : null;
+        if (modelBone === firstMobileBone) {
+          constraints = flexConstraint;
+        }
         chain.add(new THREE.IKJoint(bone, { constraints }), { target });
       }
+      console.log(chain);
 
       // Add the chain to the IK system
       ik.add(chain);
@@ -76,6 +99,8 @@ AFRAME.registerComponent("move-arm", {
       const helper = new IKHelper(ik);
       scene.add(helper);
       this.iks.push(ik);
+      this.modelBones = modelBones;
+      this.ikBones = ikBones;
     });
   },
 
@@ -83,6 +108,9 @@ AFRAME.registerComponent("move-arm", {
     this.target.position.copy(this.leftController.position);
     for (let ik of this.iks) {
       ik.solve();
+    }
+    for (let i = 0; i < this.modelBones.length; i++) {
+      this.modelBones[i].rotation.copy(this.ikBones[i].rotation);
     }
   },
 });
