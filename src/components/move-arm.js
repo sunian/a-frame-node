@@ -7,7 +7,6 @@ const THREE = AFRAME.THREE;
 AFRAME.registerComponent("move-arm", {
   schema: {
     arm: { type: "string", default: "Left" },
-    angle: { type: "number", default: NaN },
   },
 
   init: function () {
@@ -25,14 +24,22 @@ AFRAME.registerComponent("move-arm", {
       const findBone = function (name) {
         return skeleton.bones.find((b) => b.name.includes(name));
       };
-      const lastMobileBone = findBone(this.data.arm + "Hand");
+      console.log(skeleton.bones.map((b) => b.name));
+      const lastMobileBone = findBone(this.data.arm + "HandMiddle1");
       const firstMobileBone = findBone(this.data.arm + "Shoulder");
-      const modelBones = [lastMobileBone];
-      var currentBone = lastMobileBone;
+      var currentBone = firstMobileBone;
       const rootBone = new THREE.Bone();
-      rootBone.name = firstMobileBone.name;
-
+      rootBone.name = currentBone.name;
+      rootBone.position.copy(currentBone.position);
       while (currentBone instanceof THREE.Bone) {
+        rootBone.position.multiply(currentBone.scale);
+        currentBone = currentBone.parent;
+        rootBone.position.add(currentBone.position);
+        rootBone.scale.multiply(currentBone.scale);
+      }
+      currentBone = lastMobileBone;
+      const modelBones = [currentBone];
+      while (currentBone !== firstMobileBone) {
         currentBone = currentBone.parent;
         modelBones.push(currentBone);
       }
@@ -40,7 +47,7 @@ AFRAME.registerComponent("move-arm", {
 
       console.log("*****");
       for (let bone of modelBones) {
-        console.log(bone.name, bone.position, bone.scale);
+        console.log(bone.name, bone.position);
       }
       console.log("*****");
 
@@ -60,19 +67,18 @@ AFRAME.registerComponent("move-arm", {
 
       // Create a chain of THREE.Bone's, each wrapped as an IKJoint
       // and added to the IKChain
-      var constraints = fixedConstraint;
+      var constraints = flexConstraint;
       const ikBones = [];
       var scale = new THREE.Vector3(1, 1, 1);
       for (let i = 0; i < modelBones.length; i++) {
         const bone = new THREE.Bone();
-        const modelBone = modelBones[i];
+        const modelBone = i === 0 ? rootBone : modelBones[i];
         bone.name = modelBone.name;
         scale.multiply(modelBone.scale);
         bone.position.multiply(scale);
         bone.position.copy(scale.clone().multiply(modelBone.position));
         bone.rotation.copy(modelBone.rotation);
         bone.up.copy(modelBone.up);
-        // bone.scale.copy(modelBone.scale);
 
         if (ikBones[i - 1]) {
           ikBones[i - 1].add(bone);
@@ -81,9 +87,6 @@ AFRAME.registerComponent("move-arm", {
 
         // The last IKJoint must be added with a `target` as an end effector.
         const target = modelBone === lastMobileBone ? movingTarget : null;
-        if (modelBone === firstMobileBone) {
-          constraints = flexConstraint;
-        }
         chain.add(new THREE.IKJoint(bone, { constraints }), { target });
       }
       console.log(chain);

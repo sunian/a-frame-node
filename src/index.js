@@ -44,7 +44,7 @@ const App = () => (
         name="xbot"
         src="#xbot"
         disable-culling
-        move-arm="arm: Left; angle: 5"
+        move-arm="arm: Left"
       />
     </a-entity>
 

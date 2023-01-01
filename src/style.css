@@ -20,6 +20,10 @@ body {
   font-size: 420%;
 }
 
+.loadingText::before {
+  content: "LOADING . . .";
+}
+
 #game-container {
   height: 100%;
   width: 100%;
